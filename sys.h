@@ -112,6 +112,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #  define SSE2_PRESENT
 # elif defined(__powerpc__)
 #  define DP_ARCH_STR		"ppc"
+#  if defined(__VSX__) && defined(__LITTLE_ENDIAN__)
+#   define VSX_PRESENT
+#  endif
 # endif
 #elif defined(_WIN64)
 # define DP_ARCH_STR		"x86_64"

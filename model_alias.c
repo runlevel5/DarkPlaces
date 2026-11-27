@@ -25,10 +25,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifdef SSE_POSSIBLE
 #include "mod_skeletal_animatevertices_sse.h"
 #endif
+#ifdef VSX_PRESENT
+#include "mod_skeletal_animatevertices_vsx.h"
+#endif
 
 #ifdef SSE_POSSIBLE
 static qbool r_skeletal_use_sse_defined = false;
 cvar_t r_skeletal_use_sse = {CF_CLIENT, "r_skeletal_use_sse", "1", "use SSE for skeletal model animation"};
+#endif
+#ifdef VSX_PRESENT
+cvar_t r_skeletal_use_vsx = {CF_CLIENT, "r_skeletal_use_vsx", "1", "use VSX for skeletal model animation"};
 #endif
 cvar_t r_skeletal_debugbone = {CF_CLIENT, "r_skeletal_debugbone", "-1", "development cvar for testing skeletal model code"};
 cvar_t r_skeletal_debugbonecomponent = {CF_CLIENT, "r_skeletal_debugbonecomponent", "3", "development cvar for testing skeletal model code"};
@@ -183,6 +189,13 @@ static void Mod_Skeletal_AnimateVertices(const model_t * RESTRICT model, const f
 			return;
 		}
 #endif
+#ifdef VSX_PRESENT
+	if(r_skeletal_use_vsx.integer)
+	{
+		Mod_Skeletal_AnimateVertices_VSX(model, frameblend, skeleton, vertex3f, normal3f, svector3f, tvector3f);
+		return;
+	}
+#endif
 	Mod_Skeletal_AnimateVertices_Generic(model, frameblend, skeleton, vertex3f, normal3f, svector3f, tvector3f);
 }
 
@@ -208,6 +221,9 @@ void Mod_AliasInit (void)
 	}
 	else
 		Con_Printf("Skeletal animation uses generic code path (SSE disabled or not detected)\n");
+#elif defined(VSX_PRESENT)
+	Con_Printf("Skeletal animation uses VSX code path\n");
+	Cvar_RegisterVariable(&r_skeletal_use_vsx);
 #else
 	Con_Printf("Skeletal animation uses generic code path (SSE not compiled in)\n");
 #endif
