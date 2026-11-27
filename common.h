@@ -93,35 +93,91 @@ void COM_Init_Commands(void);
 #define BigFloat(l) BuffBigFloat((unsigned char *)&(l))
 #define LittleFloat(l) BuffLittleFloat((unsigned char *)&(l))
 
+/* Casting to unsigned when shifting by 24 bits here is necessary to prevent UB
+ * caused by shifting outside the range of int on platforms where int is 32 bits.
+ */
+
 /// Extract a big endian 32bit float from the given \p buffer.
-float BuffBigFloat (const unsigned char *buffer);
+static inline float BuffBigFloat (const unsigned char *buffer)
+{
+	union
+	{
+		float f;
+		unsigned int i;
+	}
+	u;
+	u.i = ((unsigned)buffer[0] << 24) | (buffer[1] << 16) | (buffer[2] << 8) | buffer[3];
+	return u.f;
+}
 
 /// Extract a big endian 32bit int from the given \p buffer.
-int BuffBigLong (const unsigned char *buffer);
+static inline int BuffBigLong (const unsigned char *buffer)
+{
+	return ((unsigned)buffer[0] << 24) | (buffer[1] << 16) | (buffer[2] << 8) | buffer[3];
+}
 
 /// Extract a big endian 16bit short from the given \p buffer.
-short BuffBigShort (const unsigned char *buffer);
+static inline short BuffBigShort (const unsigned char *buffer)
+{
+	return (buffer[0] << 8) | buffer[1];
+}
 
 /// Extract a little endian 32bit float from the given \p buffer.
-float BuffLittleFloat (const unsigned char *buffer);
+static inline float BuffLittleFloat (const unsigned char *buffer)
+{
+	union
+	{
+		float f;
+		unsigned int i;
+	}
+	u;
+	u.i = ((unsigned)buffer[3] << 24) | (buffer[2] << 16) | (buffer[1] << 8) | buffer[0];
+	return u.f;
+}
 
 /// Extract a little endian 32bit int from the given \p buffer.
-int BuffLittleLong (const unsigned char *buffer);
+static inline int BuffLittleLong (const unsigned char *buffer)
+{
+	return ((unsigned)buffer[3] << 24) | (buffer[2] << 16) | (buffer[1] << 8) | buffer[0];
+}
 
 /// Extract a little endian 16bit short from the given \p buffer.
-short BuffLittleShort (const unsigned char *buffer);
+static inline short BuffLittleShort (const unsigned char *buffer)
+{
+	return (buffer[1] << 8) | buffer[0];
+}
 
 /// Encode a big endian 32bit int to the given \p buffer
-void StoreBigLong (unsigned char *buffer, unsigned int i);
+static inline void StoreBigLong (unsigned char *buffer, unsigned int i)
+{
+	buffer[0] = (i >> 24) & 0xFF;
+	buffer[1] = (i >> 16) & 0xFF;
+	buffer[2] = (i >>  8) & 0xFF;
+	buffer[3] = i         & 0xFF;
+}
 
 /// Encode a big endian 16bit int to the given \p buffer
-void StoreBigShort (unsigned char *buffer, unsigned short i);
+static inline void StoreBigShort (unsigned char *buffer, unsigned short i)
+{
+	buffer[0] = (i >>  8) & 0xFF;
+	buffer[1] = i         & 0xFF;
+}
 
 /// Encode a little endian 32bit int to the given \p buffer
-void StoreLittleLong (unsigned char *buffer, unsigned int i);
+static inline void StoreLittleLong (unsigned char *buffer, unsigned int i)
+{
+	buffer[0] = i         & 0xFF;
+	buffer[1] = (i >>  8) & 0xFF;
+	buffer[2] = (i >> 16) & 0xFF;
+	buffer[3] = (i >> 24) & 0xFF;
+}
 
 /// Encode a little endian 16bit int to the given \p buffer
-void StoreLittleShort (unsigned char *buffer, unsigned short i);
+static inline void StoreLittleShort (unsigned char *buffer, unsigned short i)
+{
+	buffer[0] = i         & 0xFF;
+	buffer[1] = (i >>  8) & 0xFF;
+}
 //@}
 
 //============================================================================
