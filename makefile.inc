@@ -74,6 +74,7 @@ OBJ_COMMON= \
 	mdfour.o \
 	meshqueue.o \
 	mod_skeletal_animatevertices_sse.o \
+	mod_skeletal_animatevertices_vsx.o \
 	mod_skeletal_animatevertices_generic.o \
 	model_alias.o \
 	model_brush.o \
